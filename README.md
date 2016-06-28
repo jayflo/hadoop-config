@@ -1,3 +1,5 @@
+# !Under Construction!
+
 ## Hadoop 2.7.2 Tutorial
 
 Being interested in distributed programming and Hadoop, I decided to setup my own VM cluster using the latest version (2.7.2) on my Windows desktop.  It's actually not so difficult so I will outline all the tasks here.  Even though the desktop is Windows 10, the VMs run (Arch) Linux so it helps if you are/have been a Linux user.  The actual Linux distribution you use is not that important, but I chose Arch since it is a *small* install and that makes for small VM size.
@@ -97,16 +99,15 @@ I'm not sure if you can have all these different processes running on a one or t
   1. `namenode`: will be the NameNode and a DataNode.
   2. `resourcemanager`: will be the ResourceManager and a DataNode
   3. `datanode1`: will be a dedicated DataNode.
-The configuration files that reside on each VM are identical, we only need to install Hadoop and the configurations on the template VM, and then make sure to setup the IPs/hostnames so that VMs can communicate with one another.
+The configuration files that reside on each VM are identical, we only need to install Hadoop and the configurations on the template VM, and then make sure to setup the IPs/hostnames so that VMs can communicate with one another.  Setting up VM hostnames and IPs will be done after the Hadoop installation.
 
 ##### Get Hadoop
 
 1. In your home folder `wget http://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz`
 2. `tar -xf hadoop-2.7.2.tar.gz`
 3. `mv hadoop-2.7.2 haddop`
-4. `
-4. `cd hadoop`
-5. `mkdir 
+4. `mkdir -p hadoop-hdfs/{name,data}`
+5. `cd hadoop`
 
 ##### Configure Hadoop
 
@@ -116,7 +117,58 @@ This repo comprises the configuration files for the cluster I set up, which for 
 
 These are the suggestively named, core configuration files.  I currently don't understand everything that can be done through them, but what you see in this repo are the minimal configurations to get a cluster up and running.
 
-1. `core-site-xml`: (important) sets location of HDFS filesystem.  Note that this value `hdfs://namenode:9000` targets our `namenode` VM as the NameNode.
-2. `hdfs-site.xml`: (
-3. `mapred-site.xml`
-4. `yarn-site.xml`
+If you want to start with this repo rather than copy/paste, do:
+
+1. `cd etc`
+2. `rm -rf hadoop`
+3. `git clone https://github.com/jayflo/hadoop-config.git hadoop`
+
+Now...
+
+1. `core-site-xml`: (no changes required) sets location of HDFS filesystem.  Note that this value `hdfs://namenode:9000` targets our `namenode` VM as the NameNode.
+2. `hdfs-site.xml`: change the file paths to point to your home directory.  These file paths tell the NameNode and DataNodes where to store data.
+3. `mapred-site.xml`: (no changes required) tell Yarn to use mapreduce
+4. `yarn-site.xml`: (no changes required) specifies the hostname of the ResourceManager.
+5. `hadoop-env.sh, mapred-env.sh, yarn-env.sh`: change the `JAVA_HOME` file path to point to your installation of Java.  These files setup the environment for Hadoop tasks.
+6. `slaves`: (no changes required) a list of hostnames to use as DataNodes.  This is not used by the Java code, but utilized by helper scripts to spin up processes throughout the cluster.
+
+That's it!  Our Linux+Hadoop template is complete. Logout and shutdown your VM.
+
+### Clone the VM
+
+*Export*
+
+1. Open Hyper-V
+2. Right Click > Export
+3. Pick a location
+
+*Import x 3*
+
+1. Open Hyper-V
+2. In the right hand menu > Import Virtual Machine
+3. Browse to the folder chosen in Export above.
+4. Next, Next
+5. Copy the virtual machine (create a new unique ID)
+6. Store the machine in a different location: enter the same path for all three text boxes
+7. When choosing where to store the virtual hard drive, enter the path from the previous step + `\Virtual Hard Disks\`.
+8. Finish
+9. When it's complete, rename the new VM to `namenode`.
+
+Repeate 1-9 two more times but called the next VMs `resourcemanager` and `datanode1`.
+
+### Setup Hostnames and IPs
+
+*Hostnames*
+
+1. Startup and login to all three VMs.
+2. In each VM, write their hostname into `/etc/hostname`
+
+
+Each VM will need it's own IP address which can generally be done very easily using DHCP reserved IPs.  This is generally easy to do using your router's configuration.  You likely need a wired connect to reach the router's configuration UI.
+
+
+2. Use a web browser to navigate to your router's configuration UI.  If you don't know the IP:
+  1. Open a command prompt (Windows Key + type "cmd" + enter)
+  2. `ipconfig`
+  3. It's the IP associated to "Default Gateway".
+3. In the configuration there is generall a "Gateway" tab or "View Connections" that show the list of machines currently connected to your router.  Wherever this exists, you should see connections for your three VMs (possibly called "unknown" or something similar).  
