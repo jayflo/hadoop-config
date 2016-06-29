@@ -1,10 +1,8 @@
-## Hadoop 2.7.2 Tutorial
+## Hadoop 2.7.2 Single Host, multiple VM Cluster Setup
 
 Being interested in distributed programming and Hadoop, I decided to setup my own VM cluster using the latest version (2.7.2) on my Windows desktop.  It's actually not so difficult so I will outline all the tasks here.  Even though the desktop is Windows 10, the VMs run (Arch) Linux so it helps if you are/have been a Linux user.  The actual Linux distribution you use is not that important, but I chose Arch since it is a *small* install and that makes for small VM size.
 
 At any point in this guide you can attempt to blindly follow the steps, but it's best if you read relevant material along the way.  It may take you a bit longer to get setup, but you will be more confident if you have some understanding of the intermediate steps.
-
-## Single Machine, Hadoop 2.7.2 VM Cluster Installation Tutorial
 
 ### Install Hyper-V
 
