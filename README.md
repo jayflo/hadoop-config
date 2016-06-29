@@ -223,9 +223,11 @@ If everything is working correctly, all of the following should be true:
   3. `datanode1` --> `NodeManager`
 2. You should be able to visit the NameNode Web UI from your host's browser at URL `namenode:50070`
 3. You should be able to visit the ResourceManager Web UI from your host's browser at URL `resourcemanager:8088`
-4. `cd ~/hadoop && grep -iR error logs` should return nothing.
+4. `cd ~/hadoop && grep -iR error logs` should return nothing on each VM.
 
 If everything isn't working correctly then you are in for some more work.  Be certain to look at the logs `~/hadoop/logs` to see if you can find specific errors which you can Google about.  From my own searching on the web, more often than not the problem will be a network connectivity issue requiring firewall modifications (i.e. the nodes are unable to connect to one another).  For these you are on your own...feel free to open up and issue though I promise nothing!
+
+At this point you should also be confident in all the steps you would need to follow in order to add another (data)node, `datanode2`, to the cluster!  (should you choose to be so bold)
 
 ### Contributing/Changes
 
