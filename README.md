@@ -1,5 +1,3 @@
-# !Under Construction!
-
 ## Hadoop 2.7.2 Tutorial
 
 Being interested in distributed programming and Hadoop, I decided to setup my own VM cluster using the latest version (2.7.2) on my Windows desktop.  It's actually not so difficult so I will outline all the tasks here.  Even though the desktop is Windows 10, the VMs run (Arch) Linux so it helps if you are/have been a Linux user.  The actual Linux distribution you use is not that important, but I chose Arch since it is a *small* install and that makes for small VM size.
@@ -23,7 +21,7 @@ The majority of Linux and Hadoop installations can be done once and cloned.  Thi
 ##### Choose and download a Linux Distro ISO
 
 1. Start downloading a Linux ISO.  Again, the specific distro doesn't matter, you simply want to be able to install
-  1. Git
+  1. wget
   2. Java
   3. SSH
   I prefer Arch Linux simple because the base install is relatively small (approx 4Gb per VM).  However, Arch does not have a graphical installer and if you are not used to command line installations it may seem daunting.  If you've never done it before, you should consider it a rite of passage and give it a shot.
@@ -134,6 +132,20 @@ Now...
 
 That's it!  Our Linux+Hadoop template is complete. Logout and shutdown your VM.
 
+### `/etc/hosts`
+
+After the VMs are cloned, each one will be given a hostname (`namenode`, `resourcemanager` and `datanode1`) and a reserved IP address on your local network.  The association `ip address --> hostname` for machines on your network is stored in the OSs `/etc/hosts` file (on Windows `C:\Windows\System32\drivers\etc\hosts`) and will be the same for each VM in the cluster.  If you already know what three addresses you will assign these VMs, you can edit the `/etc/hosts` file as follows:
+
+```
+::1           localhost
+127.0.0.1     localhost
+<ip_1>        namenode
+<ip_2>        resourcemanager
+<ip_3>        datanode1
+```
+
+However, if you are not yet sure what the IP addresses should be, you can wait to edit this file till later.  You will simply need to `ssh` to each machine to change it.
+
 ### Clone the VM
 
 *Export*
@@ -160,15 +172,71 @@ Repeate 1-9 two more times but called the next VMs `resourcemanager` and `datano
 
 *Hostnames*
 
-1. Startup and login to all three VMs.
-2. In each VM, write their hostname into `/etc/hostname`
+1. Startup and login to all three VMs `namenode`, `resourcemanager` and `datanode1`.
+2. In each VM, write their respective name (`namenode`, `resourcemanager` or `datanode1`) hostname into `/etc/hostname`.  The file should contain only this name.
+3. Restart the VM.
 
+Each VM will need it's own IP address which can generally be done very easily using DHCP reserved IPs.  In general this is easy to do using your router's configuration UI.  You likely need a wired connect to reach the router's IP.
 
-Each VM will need it's own IP address which can generally be done very easily using DHCP reserved IPs.  This is generally easy to do using your router's configuration.  You likely need a wired connect to reach the router's configuration UI.
-
-
-2. Use a web browser to navigate to your router's configuration UI.  If you don't know the IP:
-  1. Open a command prompt (Windows Key + type "cmd" + enter)
+1. Use a web browser to navigate to your router's configuration UI.  If you don't know the IP:
+  1. Open a command prompt (Windows Key + "cmd" + enter)
   2. `ipconfig`
   3. It's the IP associated to "Default Gateway".
-3. In the configuration there is generall a "Gateway" tab or "View Connections" that show the list of machines currently connected to your router.  Wherever this exists, you should see connections for your three VMs (possibly called "unknown" or something similar).  
+2. Usually there are two ways IPs are reserved:
+  1. There is a menu where you can specify a hostname/mac-address and the IP you want to reserve for that hostname/mac-address.
+  2. There is a menu listing currently connected devices by hostname/mac-address and you can "edit" the connection providing an IP.
+  The IP address you choose doesn't really matter as long as it's valid.  If you like to keep things "in order," your cluster IPs should start after all other IPs.  This way, if you want to add more machines in the future, the next spot won't be taken.  Otherwise, you can simply start right after the router's IP.
+3. If you didn't already edit the `/etc/hosts` file, now you must.  You can visit each VM or `ssh` freely between them to make the edits.  The form of the `/etc/hosts` is shown above.
+4. Shut down all the VMs.
+5. Edit the `C:\Windows\System32\drivers\etc\hosts` file of the host (your Windows desktop) to include the IP --> VM hostname mappings.  You don't need to include the `localhost` lines, but it wouldn't hurt anything if you did.
+5. Open another cmd prompt on the host (your Windows desktop) and do:
+
+  ```
+  ipconfig /release
+  ipconfig /all
+  ipconfig /flushdns
+  ipconfig /renew
+  ```
+6.  Restart your computer.
+
+### Spin up Hadoop
+
+Time to reap the benefits.  Everything should now be in place, we simply need to spin up the cluster and start all the HDFS/Yarn processes.
+
+1. Open Hyper-V
+2. Connect/Start cluster VMs `namenode`, `resourcemanager` and `datanode1`
+3. On `namenode` run:
+  1. `cd ~/hadoop`
+  2. `bin/hdfs namenode -format`
+  3. `sbin/start-dfs.sh` (it should start 5 things)
+4. On `resourcemanager` run:
+  1. `sbin/start-yarn.sh`
+
+If everything is working correctly, all of the following should be true:
+
+1. The `jps` (`man jps` for more info) command should have the following output:
+  1. `namenode` --> `NodeManager`, `NameNode`, `SecondaryNameNode`
+  2. `resourcemanager` --> `ResourceManager`, `NodeManager`
+  3. `datanode1` --> `NodeManager`
+2. You should be able to visit the NameNode Web UI from your host's browser at URL `namenode:50070`
+3. You should be able to visit the ResourceManager Web UI from your host's browser at URL `resourcemanager:8088`
+4. `cd ~/hadoop && grep -iR error logs` should return nothing.
+
+If everything isn't working correctly then you are in for some more work.  Be certain to look at the logs `~/hadoop/logs` to see if you can find specific errors which you can Google about.  From my own searching on the web, more often than not the problem will be a network connectivity issue requiring firewall modifications (i.e. the nodes are unable to connect to one another).  For these you are on your own...feel free to open up and issue though I promise nothing!
+
+### Contributing/Changes
+
+I made this a repo so that anyone can help make changes and keep it up to date/provide more explanation where needed.  If you'd like to add some info, submit a PR and we can include it.  Aside from adding more detail to this tutorial, it would be nice to populate the "core" xml configuration files with more options+descriptions (commented out so they are not "on" by default).  This will provide a quick way for other Hadoop hopefuls to learn about common cluster settings.  See these pages for comprehensive lists of configurations and their default values:
+
+1. [core-site.xml](http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml)
+2. [hdfs-site.xml](http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml)
+3. [mapred-site.xml](http://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml)
+4. [yarn-site.xml](http://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-common/yarn-default.xml)
+
+And of course, read as much as you can about Hadoop from the general/API documentation.
+
+### The future
+
+Next I will work on setting up IntelliJ for Hadoop development so that one can easily test their mapreduce jobs on the cluster created in this tutorial.  I will create another repo containing the project code as well as a comprehensive README for setting up the project and executing jobs.  When it is finished, I'll link it here.
+
+Good luck!
