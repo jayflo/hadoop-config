@@ -169,7 +169,7 @@ That's it!  Our Linux+Hadoop template is complete. Logout and shutdown your VM.
 8. Finish
 9. When it's complete, rename the new VM to `namenode`.
 
-Repeate 1-9 two more times but called the next VMs `resourcemanager` and `datanode1`.
+Repeate 1-9 two more times but name the next VMs `resourcemanager` and `datanode1`.
 
 ### Setup Hostnames and IPs
 
