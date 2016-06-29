@@ -22,7 +22,8 @@ The majority of Linux and Hadoop installations can be done once and cloned.  Thi
   1. wget
   2. Java
   3. SSH
-  I prefer Arch Linux simple because the base install is relatively small (approx 4Gb per VM).  However, Arch does not have a graphical installer and if you are not used to command line installations it may seem daunting.  If you've never done it before, you should consider it a rite of passage and give it a shot.
+
+I prefer Arch Linux simple because the base install is relatively small (approx 4Gb per VM).  However, Arch does not have a graphical installer and if you are not used to command line installations it may seem daunting.  If you've never done it before, you should consider it a rite of passage and give it a shot.
 
 ##### Create an External Switch in Hyper-V
 
@@ -128,8 +129,6 @@ Now...
 5. `hadoop-env.sh, mapred-env.sh, yarn-env.sh`: change the `JAVA_HOME` file path to point to your installation of Java.  These files setup the environment for Hadoop tasks.
 6. `slaves`: (no changes required) a list of hostnames to use as DataNodes.  This is not used by the Java code, but utilized by helper scripts to spin up processes throughout the cluster.
 
-That's it!  Our Linux+Hadoop template is complete. Logout and shutdown your VM.
-
 ### `/etc/hosts`
 
 After the VMs are cloned, each one will be given a hostname (`namenode`, `resourcemanager` and `datanode1`) and a reserved IP address on your local network.  The association `ip address --> hostname` for machines on your network is stored in the OSs `/etc/hosts` file (on Windows `C:\Windows\System32\drivers\etc\hosts`) and will be the same for each VM in the cluster.  If you already know what three addresses you will assign these VMs, you can edit the `/etc/hosts` file as follows:
@@ -143,6 +142,12 @@ After the VMs are cloned, each one will be given a hostname (`namenode`, `resour
 ```
 
 However, if you are not yet sure what the IP addresses should be, you can wait to edit this file till later.  You will simply need to `ssh` to each machine to change it.
+
+---
+
+That's it!  Our Linux+Hadoop template is complete. Logout and shutdown your VM.
+
+---
 
 ### Clone the VM
 
